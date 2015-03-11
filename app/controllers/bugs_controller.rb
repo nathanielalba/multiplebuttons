@@ -25,6 +25,7 @@ class BugsController < ApplicationController
   # POST /bugs.json
   def create
     @bug = Bug.new(bug_params)
+    @bug.published_at = Time.zone.now if publishing?
 
     respond_to do |format|
       if @bug.save
@@ -40,6 +41,8 @@ class BugsController < ApplicationController
   # PATCH/PUT /bugs/1
   # PATCH/PUT /bugs/1.json
   def update
+    @bug.published_at = Time.zone.now if publishing?
+    @bug.published_at = nil if unpublishing?
     respond_to do |format|
       if @bug.update(bug_params)
         format.html { redirect_to @bug, notice: 'Bug was successfully updated.' }
@@ -70,5 +73,13 @@ class BugsController < ApplicationController
     # Never trust parameters from the scary internet, only allow the white list through.
     def bug_params
       params.require(:bug).permit(:name, :description)
+    end
+
+    def publishing?
+      params[:commit] == "Publish"
+    end
+
+    def unpublishing?
+      params[:commit] == "Unpublish"
     end
 end
